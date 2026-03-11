@@ -1,0 +1,25 @@
+# OpenClaw 反向代理（自動 HTTPS）
+# 使用方式：
+#   1. 安裝 Caddy: sudo apt install -y caddy
+#   2. 將此檔案複製到 /etc/caddy/Caddyfile
+#   3. 修改下方域名為您的實際域名
+#   4. sudo systemctl restart caddy
+#
+# 注意：需要先將域名 DNS 指向此伺服器 IP
+
+openclaw.yourdomain.com {
+    reverse_proxy localhost:18789
+
+    # 安全 headers
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+
+    # 存取日誌
+    log {
+        output file /var/log/caddy/openclaw-access.log
+    }
+}
