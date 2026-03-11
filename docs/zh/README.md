@@ -107,23 +107,70 @@ docker compose exec openclaw-gateway node dist/index.js --version
 
 ## 登入 Control UI
 
-```bash
-# 查看 Token
-grep OPENCLAW_GATEWAY_TOKEN .env
+### 步驟 1：取得 Gateway Token
 
-# 帶 Token URL 直接登入（推薦）
-# http://localhost:18789/#token=YOUR_TOKEN
+Token 在首次執行 `setup.sh` 時自動生成並存放在 `.env` 檔案中。
+
+```bash
+grep OPENCLAW_GATEWAY_TOKEN .env
+# 輸出：OPENCLAW_GATEWAY_TOKEN=3d82b9ac...（= 後方的十六進位字串即為 Token）
 ```
 
-首次登入需裝置配對：
+### 步驟 2：使用 Token 開啟 Dashboard
+
+**方法 A：帶 Token 的 URL（推薦，一步完成）**
+
+將 Token 附加在 URL hash 中，自動登入：
+
+```
+http://localhost:18789/#token=YOUR_TOKEN
+```
+
+範例：
+```
+http://localhost:18789/#token=3d82b9ac595a4ad12a0667e5b73ef912ec847d58334d8cec869e4b64cffa442c
+```
+
+也可透過 CLI 自動產生此 URL：
+```bash
+docker compose --profile cli run --rm openclaw-cli dashboard --no-open
+```
+
+**方法 B：手動輸入 Token**
+
+1. 瀏覽器開啟 `http://localhost:18789`
+2. 頁面會顯示 Token 輸入欄位（或出現 `unauthorized: gateway token missing` 提示）
+3. 貼上 `.env` 中 `=` 後方的完整 Token 字串
+4. 按 Enter 登入
+
+> **WSL2 使用者**：在 Windows 瀏覽器中開啟 `http://localhost:18789` 即可（WSL2 會自動轉發）。
+
+### 步驟 3：裝置配對（首次登入必要）
+
+首次用瀏覽器連線時，Gateway 會要求**裝置配對**，您會看到 `pairing required` 提示。
 
 ```bash
-# 查看 Pending 請求
+# 查看 Pending 的配對請求
 docker compose exec openclaw-gateway node dist/index.js devices list
 
-# 批准配對
+# 批准配對（使用上方 Request 欄位的 ID）
 docker compose exec openclaw-gateway node dist/index.js devices approve <REQUEST_ID>
 ```
+
+批准後，**重新整理瀏覽器**即可進入 Control UI。
+
+> 每個新瀏覽器/裝置首次連線都需要配對一次。已配對的裝置可用 `devices list` 的 Paired 區段查看。
+
+### Token 安全注意事項
+
+- Token 等同管理員密碼，**請勿外洩**
+- 存放在 `.env` 中，已被 `.gitignore` 排除
+- 如需更換 Token：
+  ```bash
+  openssl rand -hex 32   # 生成新 token
+  # 編輯 .env 中的 OPENCLAW_GATEWAY_TOKEN 值
+  docker compose down && docker compose up -d
+  ```
 
 ---
 

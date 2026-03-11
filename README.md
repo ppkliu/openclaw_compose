@@ -107,23 +107,70 @@ docker compose exec openclaw-gateway node dist/index.js --version
 
 ## Login to Control UI
 
-```bash
-# View Token
-grep OPENCLAW_GATEWAY_TOKEN .env
+### Step 1: Get Gateway Token
 
-# Login with Token URL (recommended)
-# http://localhost:18789/#token=YOUR_TOKEN
+The token is auto-generated and stored in `.env` when you run `setup.sh`.
+
+```bash
+grep OPENCLAW_GATEWAY_TOKEN .env
+# Output: OPENCLAW_GATEWAY_TOKEN=3d82b9ac...  (the hex string after = is your token)
 ```
 
-First-time login requires device pairing:
+### Step 2: Open Dashboard with Token
+
+**Method A: Token URL (recommended, one step)**
+
+Append your token to the URL hash — this logs you in automatically:
+
+```
+http://localhost:18789/#token=YOUR_TOKEN
+```
+
+Example:
+```
+http://localhost:18789/#token=3d82b9ac595a4ad12a0667e5b73ef912ec847d58334d8cec869e4b64cffa442c
+```
+
+You can also generate this URL via CLI:
+```bash
+docker compose --profile cli run --rm openclaw-cli dashboard --no-open
+```
+
+**Method B: Manual input**
+
+1. Open `http://localhost:18789` in browser
+2. You will see a token input field (or `unauthorized: gateway token missing`)
+3. Paste the token string (the part after `=` in `.env`)
+4. Press Enter to login
+
+> **WSL2 users**: Open `http://localhost:18789` in your Windows browser — WSL2 auto-forwards the port.
+
+### Step 3: Device Pairing (first-time only)
+
+On first browser connection, Gateway requires **device pairing**. You will see a `pairing required` message.
 
 ```bash
 # View pending pairing requests
 docker compose exec openclaw-gateway node dist/index.js devices list
 
-# Approve pairing
+# Approve pairing (use the Request ID from above)
 docker compose exec openclaw-gateway node dist/index.js devices approve <REQUEST_ID>
 ```
+
+After approval, **refresh the browser** to enter Control UI.
+
+> Each new browser/device needs pairing once. Already paired devices appear in the "Paired" section of `devices list`.
+
+### Token Security Notes
+
+- The token is equivalent to an admin password — **do not share it**
+- Stored in `.env` which is excluded by `.gitignore`
+- To rotate the token:
+  ```bash
+  openssl rand -hex 32   # generate new token
+  # Edit OPENCLAW_GATEWAY_TOKEN in .env with the new value
+  docker compose down && docker compose up -d
+  ```
 
 ---
 
