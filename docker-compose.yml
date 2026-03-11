@@ -8,8 +8,10 @@ services:
       - ALL
     read_only: true
     tmpfs:
-      - /tmp:noexec,size=100m
+      - /tmp:size=200m
       - /home/node/.cache:size=200m
+      - /home/node/.npm:size=200m
+      - /home/node/.openclaw/skills:size=500m
     environment:
       HOME: /home/node
       TERM: xterm-256color
