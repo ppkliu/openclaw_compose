@@ -90,9 +90,8 @@ WORKSPACE_VOL=$(docker volume ls --format '{{.Name}}' | grep openclaw-workspace 
 if [ -n "$CONFIG_VOL" ]; then
     docker run --rm --user root \
         -v "${CONFIG_VOL}:/mnt/config" \
-        ${WORKSPACE_VOL:+-v "${WORKSPACE_VOL}:/mnt/workspace"} \
         ghcr.io/openclaw/openclaw:latest \
-        sh -c 'chown -R node:node /mnt/config; [ -d /mnt/workspace ] && chown -R node:node /mnt/workspace'
+        sh -c 'chown -R node:node /mnt/config'
 
     # 建立最小 config（若不存在）
     docker run --rm --user root \
@@ -116,6 +115,14 @@ EOFCFG
             echo "Config already exists."
         fi
     '
+fi
+
+# 修正 workspace volume 權限（獨立處理，確保 node 使用者可寫入）
+if [ -n "$WORKSPACE_VOL" ]; then
+    docker run --rm --user root \
+        -v "${WORKSPACE_VOL}:/mnt/workspace" \
+        ghcr.io/openclaw/openclaw:latest \
+        sh -c 'chown -R node:node /mnt/workspace'
 fi
 ok "設定初始化完成"
 
