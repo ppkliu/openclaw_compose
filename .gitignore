@@ -4,6 +4,9 @@
 # Docker volumes data
 data/
 
+# OpenClaw local data (host path volumes)
+openclaw/
+
 # Logs
 *.log
 

@@ -107,6 +107,18 @@ docker compose exec openclaw-gateway node dist/index.js --version
 
 ## Login to Control UI
 
+### Quick First Login
+
+For first-time setup (or after switching to host path volumes), use the helper script:
+
+```bash
+chmod +x first-login.sh && ./first-login.sh
+```
+
+This script automatically: fixes volume permissions → creates config → restarts gateway → displays login URL → approves device pairing.
+
+### Manual Login Steps
+
 ### Step 1: Get Gateway Token
 
 The token is auto-generated and stored in `.env` when you run `setup.sh`.
@@ -210,6 +222,7 @@ docker compose --profile cli run --rm openclaw-cli onboard
 ├── .env.example         # Environment variable template
 ├── .env                 # Actual environment variables (git ignored)
 ├── setup.sh             # One-click deployment script
+├── first-login.sh       # First login helper (permissions + pairing)
 ├── Caddyfile            # HTTPS reverse proxy (optional)
 ├── docs/zh/             # Chinese documentation
 │   ├── README.md        # Chinese README
